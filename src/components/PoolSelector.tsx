@@ -31,6 +31,10 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
     return pool.percentageAPRs[0] || 0;
   };
 
+  const getUniquePoolId = (pool: Pool) => {
+    return `${pool.contextChainId || 'unknown'}-${pool.poolId}`;
+  };
+
   const activePools = pools.filter(pool => 
     pool.percentageAPRs.length > 0 && 
     !pool.disabled &&
@@ -46,10 +50,11 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
           .map(pool => {
             const assetPair = pool.poolAssets.map(asset => getAssetSymbol(asset.info)).join(' / ');
             const apy = getPoolAPY(pool);
+            const uniqueId = getUniquePoolId(pool);
             
             return (
               <div
-                key={pool.poolId}
+                key={uniqueId}
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
                   selectedPools.includes(pool.poolId)
                     ? 'border-blue-500 bg-blue-50'
@@ -60,9 +65,14 @@ export const PoolSelector: React.FC<PoolSelectorProps> = ({
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
                     <span className="font-semibold text-lg">{assetPair}</span>
-                    <span className="text-sm text-gray-500">
-                      {pool.type.charAt(0).toUpperCase() + pool.type.slice(1)} Pool
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">
+                        {pool.type.charAt(0).toUpperCase() + pool.type.slice(1)} Pool
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {pool.contextChainId}
+                      </span>
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-green-600 text-lg">
