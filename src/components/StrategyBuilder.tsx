@@ -33,6 +33,10 @@ export const StrategyBuilder: React.FC<StrategyBuilderProps> = ({
     return 'Unknown';
   };
 
+  const getUniquePoolId = (pool: Pool) => {
+    return `${pool.contextChainId || 'unknown'}-${pool.poolId}`;
+  };
+
   const handleAllocationChange = (poolId: string, amount: string) => {
     const numAmount = parseFloat(amount) || 0;
     const newAllocations = currentStrategy.allocations.filter(a => a.poolId !== poolId);
@@ -84,11 +88,17 @@ export const StrategyBuilder: React.FC<StrategyBuilderProps> = ({
             
             const assetPair = pool.poolAssets.map(asset => getAssetSymbol(asset.info)).join(' / ');
             const allocation = currentStrategy.allocations.find(a => a.poolId === poolId);
+            const uniqueId = getUniquePoolId(pool);
             
             return (
-              <div key={poolId} className="p-4 border rounded-lg">
+              <div key={uniqueId} className="p-4 border rounded-lg">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{assetPair}</span>
+                  <div>
+                    <span className="font-medium">{assetPair}</span>
+                    <span className="text-xs text-gray-400 ml-2">
+                      {pool.contextChainId}
+                    </span>
+                  </div>
                   <span className="text-green-600">
                     {formatPercentage(pool.percentageAPRs[0] || 0)} APY
                   </span>
@@ -120,7 +130,7 @@ export const StrategyBuilder: React.FC<StrategyBuilderProps> = ({
           </div>
           
           <button
-            className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={saveStrategy}
             disabled={!currentStrategy.name || currentStrategy.allocations.length === 0}
           >
@@ -134,7 +144,7 @@ export const StrategyBuilder: React.FC<StrategyBuilderProps> = ({
           <h2 className="text-2xl font-bold mb-6">Saved Strategies</h2>
           <div className="space-y-4">
             {strategies.map((strategy, index) => (
-              <div key={index} className="p-4 border rounded-lg">
+              <div key={`strategy-${index}`} className="p-4 border rounded-lg">
                 <h3 className="text-xl font-bold mb-2">{strategy.name}</h3>
                 <div className="space-y-2">
                   {strategy.allocations.map(allocation => {
@@ -146,8 +156,13 @@ export const StrategyBuilder: React.FC<StrategyBuilderProps> = ({
                       .join(' / ');
                     
                     return (
-                      <div key={allocation.poolId} className="flex justify-between">
-                        <span>{assetPair}</span>
+                      <div key={`${strategy.name}-${allocation.poolId}`} className="flex justify-between">
+                        <div>
+                          <span>{assetPair}</span>
+                          <span className="text-xs text-gray-400 ml-2">
+                            {pool.contextChainId}
+                          </span>
+                        </div>
                         <span>{formatCurrency(allocation.amount)}</span>
                       </div>
                     );
